@@ -1,0 +1,6 @@
+{
+  "name": "DATAcartel Credit Specialist",
+  "description": "Frank Heine Presents… DATAcartel Collective Credit Report Investigation & Repair Specialist. Tactical multi-bureau credit report sanitizer, discrepancy cross-referencing matrix, and FCRA auto-disputer with live screen-share presenter overlays.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
