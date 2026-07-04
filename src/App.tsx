@@ -8,9 +8,11 @@ import RedactionVerifier from './components/RedactionVerifier';
 import DiscrepancyViewer from './components/DiscrepancyViewer';
 import DisputeLetterEditor from './components/DisputeLetterEditor';
 import RepairWalkthrough from './components/RepairWalkthrough';
+import CopilotChat from './components/CopilotChat';
 import { parseBureauReports, identifyDiscrepancies, identifyFlaggedItems } from './utils/parsers';
 import { CreditReport, Discrepancy, FlaggedItem, PersonalInfo } from './types';
-import { auth, googleProvider } from './lib/firebase';
+import { auth, googleProvider, db } from './lib/firebase';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { signInWithPopup, User, signOut } from 'firebase/auth';
 import { 
   Shield, 
@@ -38,6 +40,7 @@ import {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   
@@ -52,9 +55,15 @@ export default function App() {
 
   const handleLogin = async () => {
     try {
+      setAuthError(null);
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Auth error:", error);
+      if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/popup-blocked') {
+        setAuthError("Popup blocked or closed. Please click 'Open in new tab' in the top right corner to authenticate.");
+      } else {
+        setAuthError(error.message || "Failed to authenticate.");
+      }
     }
   };
 
@@ -69,10 +78,15 @@ export default function App() {
   
   // Presentation Co-Pilot Mode State
   const [isPresenterMode, setIsPresenterMode] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [sonarActive, setSonarActive] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [scrollRotation, setScrollRotation] = useState(0);
   const [hoveredElementText, setHoveredElementText] = useState<string>('');
+  
+  // Multiplayer Session State
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isHost, setIsHost] = useState(false);
 
   // Data State
   const [redactedReports, setRedactedReports] = useState<{ [key: string]: string }>({});
@@ -85,6 +99,104 @@ export default function App() {
     dob: '11/14/1988',
     address: '482 Elmwood Ave, Portland, OR 97201'
   });
+
+  // Multiplayer: Check URL for session
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const session = params.get('session');
+    if (session) {
+      setSessionId(session);
+    }
+  }, []);
+
+  // Multiplayer: Listen to session doc
+  useEffect(() => {
+    if (!sessionId) return;
+    const unsub = onSnapshot(doc(db, 'sessions', sessionId), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (user && data.hostId === user.uid) {
+          setIsHost(true);
+        } else {
+          setIsHost(false);
+          if (data.isPresenterMode !== undefined) setIsPresenterMode(data.isPresenterMode);
+          if (data.mousePosX !== undefined && data.mousePosY !== undefined) {
+            setMousePos({ x: data.mousePosX, y: data.mousePosY });
+          }
+          if (data.activeStep) setActiveStep(data.activeStep as any);
+          if (data.hoveredElementText !== undefined) setHoveredElementText(data.hoveredElementText);
+          
+          if (data.isAnalyzed !== undefined) setIsAnalyzed(data.isAnalyzed);
+          if (data.reportsData) setReportsData(data.reportsData);
+          if (data.discrepancies) setDiscrepancies(data.discrepancies);
+          if (data.flaggedItems) setFlaggedItems(data.flaggedItems);
+          if (data.redactedReports) setRedactedReports(data.redactedReports);
+        }
+      }
+    });
+    return () => unsub();
+  }, [sessionId, user]);
+
+  // Multiplayer: Fast sync (Cursor)
+  useEffect(() => {
+    if (!sessionId || !isHost || !user) return;
+    const timeout = setTimeout(() => {
+      updateDoc(doc(db, 'sessions', sessionId), {
+        mousePosX: mousePos.x,
+        mousePosY: mousePos.y,
+        hoveredElementText,
+      }).catch(console.error);
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [mousePos, hoveredElementText, sessionId, isHost, user]);
+
+  // Multiplayer: Slow sync (Data & App State)
+  useEffect(() => {
+    if (!sessionId || !isHost || !user) return;
+    updateDoc(doc(db, 'sessions', sessionId), {
+      activeStep,
+      isPresenterMode,
+      isAnalyzed,
+      reportsData,
+      discrepancies,
+      flaggedItems,
+      redactedReports
+    }).catch(console.error);
+  }, [activeStep, isPresenterMode, isAnalyzed, reportsData, discrepancies, flaggedItems, redactedReports, sessionId, isHost, user]);
+
+  const handleCreateSession = async () => {
+    if (!user) {
+      alert("Please authenticate first.");
+      return;
+    }
+    const newSessionId = Math.random().toString(36).substring(2, 8);
+    await setDoc(doc(db, 'sessions', newSessionId), {
+      hostId: user.uid,
+      activeStep,
+      mousePosX: mousePos.x,
+      mousePosY: mousePos.y,
+      hoveredElementText,
+      isPresenterMode: true,
+      isAnalyzed,
+      reportsData,
+      discrepancies,
+      flaggedItems,
+      redactedReports
+    });
+    setSessionId(newSessionId);
+    setIsHost(true);
+    setIsPresenterMode(true);
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('session', newSessionId);
+    
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      alert('Copilot Session Link Copied! Send this to your client.');
+    } catch (err) {
+      prompt('Copy this link to share with your client:', url.toString());
+    }
+  };
 
   // Track scroll position to rotate the scroll-locked cipher disk
   useEffect(() => {
@@ -242,6 +354,12 @@ export default function App() {
           >
             <Lock className="w-4 h-4" /> AUTHENTICATE VIA GOOGLE
           </button>
+          
+          {authError && (
+            <div className="mt-4 p-3 bg-red-950/50 border border-red-900/50 text-red-200 text-xs text-left w-full">
+              {authError}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -293,10 +411,16 @@ export default function App() {
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[0.85] font-display  mt-1">
                   DATAcartel
                 </h1>
+                <div className="flex justify-between w-full text-[10px] sm:text-xs lg:text-sm font-bold text-neutral-400 tracking-wider mt-2 opacity-90">
+                  {'COLLECTIVE'.split('').map((char, i) => (
+                    <span key={i}>{char}</span>
+                  ))}
+                </div>
               </div>
-              <p className="text-sm sm:text-base font-normal text-neutral-400 tracking-tight leading-snug mt-3 font-display max-w-md">
-                Collective Credit Report Investigation <span className="text-neutral-600 italic">&</span> Repair Specialist
-              </p>
+              <div className="text-sm sm:text-base font-normal text-neutral-400 tracking-tight leading-snug mt-4 font-display">
+                <p>Credit Report Investigator</p>
+                <p className="mt-0.5"><span className="text-neutral-600 italic">&</span> Repair Specialist</p>
+              </div>
             </div>
           </div>
 
@@ -318,20 +442,44 @@ export default function App() {
             </div>
 
             {/* Screen Share Mode Switcher */}
-            <button
-              onClick={() => {
-                setIsPresenterMode(!isPresenterMode);
-              }}
-              className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 cursor-pointer ${
-                isPresenterMode 
-                  ? 'bg-neutral-800/40 text-white border-neutral-700 ' 
-                  : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:text-neutral-300 hover:bg-neutral-800/40'
-              }`}
-              title="Enhance layout for clear, interactive visual guidance during screenshare sessions"
-            >
-              <Radio className={`w-4 h-4 ${isPresenterMode ? ' text-white' : 'text-neutral-400'}`} />
-              {isPresenterMode ? 'CO-PILOT PRESENTATION: ON' : 'ACTIVATE CO-PILOT'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsCopilotOpen(!isCopilotOpen)}
+                className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 cursor-pointer ${
+                  isCopilotOpen 
+                    ? 'bg-neutral-200 text-black border-neutral-300' 
+                    : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:text-neutral-300 hover:bg-neutral-800/40'
+                }`}
+                title="Summon the DATAcartel AI Specialist"
+              >
+                <Sparkles className={`w-4 h-4 ${isCopilotOpen ? 'text-black' : 'text-neutral-400'}`} />
+                {isCopilotOpen ? 'COPILOT ACTIVE' : 'ACTIVATE COPILOT'}
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsPresenterMode(!isPresenterMode);
+                }}
+                className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 cursor-pointer ${
+                  isPresenterMode 
+                    ? 'bg-neutral-800/40 text-white border-neutral-700 ' 
+                    : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:text-neutral-300 hover:bg-neutral-800/40'
+                }`}
+                title="Enhance layout for clear, interactive visual guidance during screenshare sessions"
+              >
+                <Radio className={`w-4 h-4 ${isPresenterMode ? ' text-white' : 'text-neutral-400'}`} />
+                {isPresenterMode ? 'PRESENTATION: ON' : 'PRESENTATION MODE'}
+              </button>
+              
+              <button
+                onClick={handleCreateSession}
+                className="px-4 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 cursor-pointer bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:text-neutral-300 hover:bg-neutral-800/40"
+                title="Generate a real-time tracking link to share with your client"
+              >
+                <RefreshCw className="w-4 h-4" />
+                SHARE LIVE LINK
+              </button>
+            </div>
 
             {/* Step Indicators */}
             <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-xl border border-neutral-800/80 text-xs  font-medium">
@@ -579,6 +727,9 @@ export default function App() {
           © 2026 DATACARTEL COLLECTIVE. ALL ASSETS COMPLIANT WITH CREDIT REPAIR ORGANIZATIONS ACT (CROA) PARAGRAPH STANDARDS.
         </div>
       </footer>
+
+      {/* Persistent Copilot */}
+      <CopilotChat isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
     </div>
   );
 }

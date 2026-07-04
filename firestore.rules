@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidSession(data) {
+      return data.keys().hasAll(['hostId', 'activeStep', 'mousePosX', 'mousePosY', 'hoveredElementText', 'isPresenterMode']) &&
+             data.hostId is string && data.hostId.size() <= 128;
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && 
+                    isValidSession(request.resource.data) && 
+                    request.resource.data.hostId == request.auth.uid;
+      allow update: if isSignedIn() && 
+                    resource.data.hostId == request.auth.uid;
+    }
+  }
+}
+

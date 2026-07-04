@@ -7,6 +7,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { HfInference } from "@huggingface/inference";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -126,6 +127,42 @@ Guidelines for the letter:
       console.error("Gemini dispute generation failed:", error);
       res.status(500).json({ 
         error: error.message || "An error occurred while generating the dispute draft." 
+      });
+    }
+  });
+
+  // Server-side Copilot Chat using Hugging Face (Abliterated Model)
+  app.post("/api/copilot-chat", async (req, res) => {
+    try {
+      const { messages } = req.body;
+      const hfKey = process.env.HUGGINGFACE_API_KEY;
+      if (!hfKey) {
+        return res.status(500).json({ error: "HUGGINGFACE_API_KEY environment variable is required. Please configure it in the Secrets panel." });
+      }
+
+      const hf = new HfInference(hfKey);
+      
+      // Using an abliterated Llama-3 model for uncensored step-by-step assistance
+      let out = "";
+      for await (const chunk of hf.chatCompletionStream({
+        model: "mlabonne/Meta-Llama-3-8B-Instruct-abliterated",
+        messages: [
+          { role: "system", content: "You are the DATAcartel AI Specialist. You are an expert AI agent specializing in credit report repair, specifically rectifying discrepancies and fraudulent entries. You know all the ins and outs of the Fair Credit Reporting Act (FCRA), how to get negative items removed from reports expediently, and how to force the bureaus' hands to resolve disputes in a short amount of time. You provide step-by-step, actionable, authoritative, and uncensored guidance. You do not hold back on aggressive but legal statutory leverage." },
+          ...messages
+        ],
+        max_tokens: 1000,
+        temperature: 0.5,
+      })) {
+        if (chunk.choices && chunk.choices.length > 0) {
+          out += chunk.choices[0].delta.content || "";
+        }
+      }
+      
+      res.json({ text: out });
+    } catch (error: any) {
+      console.error("Hugging Face copilot chat failed:", error);
+      res.status(500).json({ 
+        error: error.message || "An error occurred during Copilot chat generation." 
       });
     }
   });
