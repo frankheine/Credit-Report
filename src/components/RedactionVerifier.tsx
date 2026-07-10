@@ -226,7 +226,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
           {activeTab === 'demo' && (
             <div className="bg-[#0a0a0a] p-5 rounded-xl border border-neutral-800 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-neutral-200   ">SUBJECT FILE: Sarah J. Jenkins</span>
+                <span className="text-xs font-bold text-neutral-200   ">SUBJECT FILE: Natasha K.</span>
                 <span className="px-2 py-0.5 bg-neutral-500/10 border border-neutral-500/20 text-neutral-400 text-[10px] font-bold rounded-full   ">
                   DISCREPANCIES PRESENT
                 </span>

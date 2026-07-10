@@ -13,12 +13,18 @@ interface CopilotChatProps {
 
 export default function CopilotChat({ isOpen, onClose }: CopilotChatProps) {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'I am the DATAcartel AI Specialist. I have deep authorization and statutory leverage to assist in disputing negative credit marks. What discrepancies are we attacking today?' }
+    { role: 'assistant', content: 'I am Frank, the DATAcartel AI Specialist. I have deep authorization and statutory leverage to assist in disputing negative credit marks. What discrepancies are we attacking today?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const testPrompts = [
+    "Draft an aggressive dispute letter targeting Equifax for an unverified collection, citing FCRA 611 and threatening CFPB action.",
+    "Give me an unvarnished strategy on how to leverage an FTC Identity Theft report to force a hard delete.",
+    "Explain exactly how collection agencies violate the FDCPA and how I can use it against them."
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,7 +89,7 @@ export default function CopilotChat({ isOpen, onClose }: CopilotChatProps) {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-bold text-lg tracking-wide">DATAcartel Copilot</span>
+              <span className="font-display font-bold text-lg tracking-wide">Frank - DATAcartel Copilot</span>
               <span className="text-[10px] text-neutral-400 font-mono">ABLITERATED SPECIALIST ASSISTANT</span>
             </div>
           </div>
@@ -118,6 +124,20 @@ export default function CopilotChat({ isOpen, onClose }: CopilotChatProps) {
           {error && (
             <div className="bg-red-950/50 border border-red-900/50 text-red-200 text-xs p-4 rounded-xl">
               {error}
+            </div>
+          )}
+          {messages.length === 1 && (
+            <div className="flex flex-col gap-2 mt-4">
+              <span className="text-[10px] text-neutral-500 font-mono mb-1 uppercase">Test Abliterated Capabilities</span>
+              {testPrompts.map((prompt, i) => (
+                <button 
+                  key={i}
+                  onClick={() => { setInput(prompt); }}
+                  className="text-left text-xs bg-neutral-900/50 hover:bg-neutral-800 text-neutral-400 hover:text-white p-3 rounded-xl border border-neutral-800 transition-colors"
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
           )}
           <div ref={messagesEndRef} />

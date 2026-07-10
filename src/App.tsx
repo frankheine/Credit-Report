@@ -11,9 +11,9 @@ import RepairWalkthrough from './components/RepairWalkthrough';
 import CopilotChat from './components/CopilotChat';
 import { parseBureauReports, identifyDiscrepancies, identifyFlaggedItems } from './utils/parsers';
 import { CreditReport, Discrepancy, FlaggedItem, PersonalInfo } from './types';
-import { auth, googleProvider, db } from './lib/firebase';
+import { db } from './lib/firebase';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
-import { signInWithPopup, User, signOut } from 'firebase/auth';
+import { motion } from 'motion/react';
 import { 
   Shield, 
   FileSpreadsheet, 
@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
@@ -46,30 +46,35 @@ export default function App() {
   
   // Auth listener
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-      setAuthLoading(false);
-    });
-    return () => unsubscribe();
+    const savedUser = localStorage.getItem('datacartel_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    setAuthLoading(false);
   }, []);
 
   const handleLogin = async () => {
     try {
       setAuthError(null);
-      await signInWithPopup(auth, googleProvider);
+      setAuthLoading(true);
+      const mockUser = {
+        uid: 'agent-' + Math.random().toString(36).substring(2, 10),
+        displayName: 'Field Agent',
+        email: 'agent@datacartel.local'
+      };
+      localStorage.setItem('datacartel_user', JSON.stringify(mockUser));
+      setUser(mockUser);
+      setAuthLoading(false);
     } catch (error: any) {
       console.error("Auth error:", error);
-      if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/popup-blocked') {
-        setAuthError("Popup blocked or closed. Please click 'Open in new tab' in the top right corner to authenticate.");
-      } else {
-        setAuthError(error.message || "Failed to authenticate.");
-      }
+      setAuthError(error.message || "Failed to authenticate.");
     }
   };
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      localStorage.removeItem('datacartel_user');
+      setUser(null);
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -94,11 +99,12 @@ export default function App() {
   const [discrepancies, setDiscrepancies] = useState<Discrepancy[]>([]);
   const [flaggedItems, setFlaggedItems] = useState<FlaggedItem[]>([]);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    name: 'Sarah J. Jenkins',
+    name: 'Natasha K.',
     ssn: '[REDACTED SSN]',
     dob: '11/14/1988',
     address: '482 Elmwood Ave, Portland, OR 97201'
   });
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Multiplayer: Check URL for session
   useEffect(() => {
@@ -166,7 +172,7 @@ export default function App() {
 
   const handleCreateSession = async () => {
     if (!user) {
-      alert("Please authenticate first.");
+      handleLogin();
       return;
     }
     const newSessionId = Math.random().toString(36).substring(2, 8);
@@ -192,9 +198,11 @@ export default function App() {
     
     try {
       await navigator.clipboard.writeText(url.toString());
-      alert('Copilot Session Link Copied! Send this to your client.');
+      setToastMessage('Copilot Session Link Copied! Send this to your client.');
+      setTimeout(() => setToastMessage(null), 5000);
     } catch (err) {
-      prompt('Copy this link to share with your client:', url.toString());
+      setToastMessage(`Copy this link: ${url.toString()}`);
+      setTimeout(() => setToastMessage(null), 10000);
     }
   };
 
@@ -297,7 +305,7 @@ export default function App() {
   const PRESENTER_GUIDANCE = {
     1: {
       stepTitle: "PII Sanitization Pass",
-      frankTalk: "“Sarah, notice how this client-side redactor physically masks your SSN and account codes before they ever touch any remote server. Your private identity data is 100% secure. Let's load the demo reports so we can inspect the violations.”",
+      frankTalk: "“Notice notice how this client-side redactor physically masks your SSN and account codes before they ever touch any remote server. Your private identity data is 100% secure. Let's load the demo reports so we can inspect the violations.”",
       tacticalFocus: "Client-side client protection, regex blackouts, local sandboxing.",
       highlightQuery: "Upload or select Demo bureau reports."
     },
@@ -341,18 +349,25 @@ export default function App() {
             <Cpu className="w-10 h-10 text-white" />
           </div>
           
-          <h1 className="text-3xl font-display font-normal tracking-tight mb-2">DATAcartel</h1>
-          <p className="text-xs text-neutral-400    mb-8">SECURE SYSTEM ACCESS</p>
+          <div className="text-xl sm:text-2xl font-display font-black tracking-tight mb-2 text-white">
+            DATAcartel <span className="font-normal text-neutral-400">Collective</span>
+          </div>
+          
+          <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight mb-2 leading-[1.1]">
+            Credit Report Investigator<br/>
+            <span className="text-neutral-500 italic text-3xl sm:text-4xl">&</span> Repair Specialist
+          </h1>
+          <p className="text-xs text-neutral-400    mb-8 mt-4">SECURE SYSTEM ACCESS</p>
           
           <p className="text-sm text-neutral-400 mb-8 leading-relaxed">
-            Authenticate to access the Collective Credit Report Investigation & Repair Specialist core.
+            Authenticate to access the investigation & repair core.
           </p>
           
           <button
             onClick={handleLogin}
             className="w-full bg-white hover:bg-neutral-200 text-black text-sm font-bold  py-3 px-4 flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
-            <Lock className="w-4 h-4" /> AUTHENTICATE VIA GOOGLE
+            <Lock className="w-4 h-4" /> SECURE SYSTEM ACCESS
           </button>
           
           {authError && (
@@ -367,6 +382,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-black text-neutral-200 flex flex-col font-sans  relative overflow-x-hidden">
+      
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 border border-neutral-700 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in">
+          <Shield className="w-5 h-5 text-neutral-400" />
+          <span className="text-sm font-medium">{toastMessage}</span>
+        </div>
+      )}
       
       {/* Dynamic Screen-Share Sonar Cursor Spotlight */}
       {isPresenterMode && sonarActive && (
@@ -402,25 +424,26 @@ export default function App() {
               <Cpu className="w-8 h-8" />
             </div>
             <div className="flex flex-col sm:border-l border-neutral-800 sm:pl-6 py-1">
-              <div className="flex flex-col w-fit">
-                <div className="flex justify-between w-full text-[9px] sm:text-[10px]  font-bold text-red-600  tracking-tighter opacity-90">
+              <div className="flex flex-col w-fit mb-3">
+                <div className="flex justify-between w-full text-[9px] sm:text-[10px] font-bold text-red-600 tracking-tighter opacity-90">
                   {'FRANK HEINE PRESENTS...'.split('').map((char, i) => (
                     <span key={i}>{char === ' ' ? '\u00A0' : char}</span>
                   ))}
                 </div>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[0.85] font-display  mt-1">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-[0.85] font-display mt-1">
                   DATAcartel
-                </h1>
+                </div>
                 <div className="flex justify-between w-full text-[10px] sm:text-xs lg:text-sm font-bold text-neutral-400 tracking-wider mt-2 opacity-90">
                   {'COLLECTIVE'.split('').map((char, i) => (
                     <span key={i}>{char}</span>
                   ))}
                 </div>
               </div>
-              <div className="text-sm sm:text-base font-normal text-neutral-400 tracking-tight leading-snug mt-4 font-display">
-                <p>Credit Report Investigator</p>
-                <p className="mt-0.5"><span className="text-neutral-600 italic">&</span> Repair Specialist</p>
-              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-serif text-white tracking-tight leading-[1] mt-1">
+                Credit Report Investigator
+                <br />
+                <span className="text-neutral-500 italic font-normal text-3xl sm:text-4xl lg:text-6xl">&</span> Repair Specialist
+              </h1>
             </div>
           </div>
 
@@ -521,6 +544,16 @@ export default function App() {
         {/* LEFT WORKSPACE (COL 1 TO 9) */}
         <main className="lg:col-span-9 flex flex-col gap-6">
 
+          {/* Progress Bar */}
+          <div className="w-full bg-neutral-900 rounded-full h-1.5 overflow-hidden">
+            <motion.div 
+              className="bg-white h-1.5 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(activeStep / 4) * 100}%` }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            />
+          </div>
+
           {/* Presenter guidance banner if presenter mode active */}
           {isPresenterMode && PRESENTER_GUIDANCE && (
             <div className="bg-neutral-900/35 border-2 border-dashed border-neutral-700 rounded-xl p-5  relative overflow-hidden animate-fade-in">
@@ -579,7 +612,7 @@ export default function App() {
                 <div>
                   <h2 className="text-sm font-semibold text-neutral-100">4-Bureau Credit Profile Sanitized and Analyzed</h2>
                   <p className="text-[11px] text-neutral-400 mt-0.5 ">
-                    SUBJECT: Sarah J. Jenkins | Inconsistencies: <span className="text-neutral-400 font-bold">{discrepancies.length}</span> | Fraud Alerts: <span className="text-neutral-400 font-bold">{flaggedItems.filter(f => f.type === 'fraud').length}</span>
+                    SUBJECT: Natasha K. | Inconsistencies: <span className="text-neutral-400 font-bold">{discrepancies.length}</span> | Fraud Alerts: <span className="text-neutral-400 font-bold">{flaggedItems.filter(f => f.type === 'fraud').length}</span>
                   </p>
                 </div>
               </div>
