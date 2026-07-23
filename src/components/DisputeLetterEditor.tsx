@@ -91,10 +91,10 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
   };
 
   return (
-    <div id="dispute-letter-editor-section" className="bg-[#050505] rounded-xl border border-neutral-800 overflow-hidden shadow-none  mb-8">
+    <div id="dispute-letter-editor-section" className="bg-black/30 backdrop-blur-md content-card rounded-xl border border-neutral-800 overflow-hidden shadow-none  mb-8">
       
       {/* Editor Header */}
-      <div className="bg-[#0a0a0a] border-b border-neutral-800 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="bg-black/40 backdrop-blur-md content-card content-card border-b border-neutral-800 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-neutral-200 flex items-center gap-1.5 ">
             <FileText className="w-5 h-5 text-white " /> STATUTORY EVIDENCE COMPILE UNIT
@@ -111,7 +111,7 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
       <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-neutral-800/80">
         
         {/* Left selector sidebar: list of flagged items */}
-        <div className="md:col-span-4 p-4 flex flex-col gap-2 bg-[#0a0a0a]">
+        <div className="md:col-span-4 p-4 flex flex-col gap-2 bg-black/40 backdrop-blur-md content-card">
           <span className="text-[10px] font-bold text-neutral-500    mb-2 block text-white">
             DISPUTABLE ITEMS MATRIX ({flaggedItems.length})
           </span>
@@ -128,7 +128,7 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
                 className={`w-full text-left p-3.5 rounded-xl border text-xs flex flex-col gap-1 transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-neutral-900 border-neutral-700 shadow-none ring-1 ring-white text-white'
-                    : 'bg-[#0a0a0a] border-neutral-800/80 hover:border-neutral-700 text-neutral-400 hover:text-neutral-200'
+                    : 'bg-black/40 backdrop-blur-md content-card border-neutral-800/80 hover:border-neutral-700 text-neutral-400 hover:text-neutral-200'
                 }`}
               >
                 <div className="flex items-center justify-between font-bold ">
@@ -155,7 +155,7 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
         </div>
 
         {/* Right editor panel */}
-        <div className="md:col-span-8 p-6 flex flex-col gap-4 bg-[#0a0a0a]">
+        <div className="md:col-span-8 p-6 flex flex-col gap-4 bg-black/40 backdrop-blur-md content-card">
           {currentItem ? (
             <div className="flex flex-col gap-4">
               
@@ -211,7 +211,7 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
               </div>
 
               {/* Dispute metadata briefing */}
-              <div className="bg-[#0a0a0a] rounded-xl p-3.5 border border-neutral-800/60 text-xs text-neutral-300 flex flex-col gap-2 ">
+              <div className="bg-black/40 backdrop-blur-md content-card content-card rounded-xl p-3.5 border border-neutral-800/60 text-xs text-neutral-300 flex flex-col gap-2 ">
                 <span className="font-bold text-white  text-[9px]  block border-b border-neutral-900 pb-1">REPORTING INCONSISTENCY RECORD:</span>
                 <p><strong className="text-neutral-400">Ledger Error:</strong> {currentItem.details}</p>
                 <p><strong className="text-neutral-400">FCRA Claim:</strong> {currentItem.disputeReason}</p>
@@ -219,7 +219,7 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
 
               {/* Document Text Box */}
               {isDrafting[currentItem.id] ? (
-                <div className="h-[300px] border border-dashed border-neutral-700 rounded-xl bg-[#0a0a0a] flex flex-col items-center justify-center text-center p-6 gap-3">
+                <div className="h-[300px] border border-dashed border-neutral-700 rounded-xl bg-black/40 backdrop-blur-md content-card flex flex-col items-center justify-center text-center p-6 gap-3">
                   <RefreshCw className="w-8 h-8 text-white animate-spin" />
                   <div>
                     <p className="text-xs font-bold text-neutral-200    ">Drafting FCRA Disputation Text...</p>
@@ -231,15 +231,15 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
                   <textarea
                     value={editingText}
                     onChange={(e) => setEditingText(e.target.value)}
-                    className="w-full h-[320px] p-4 text-xs  border border-neutral-700 rounded-xl focus:ring-1 focus:ring-white bg-[#0a0a0a] text-neutral-200 leading-relaxed focus:border-neutral-700 focus:outline-hidden"
+                    className="w-full h-[320px] p-4 text-xs  border border-neutral-700 rounded-xl focus:ring-1 focus:ring-white bg-black/40 backdrop-blur-md content-card text-neutral-200 leading-relaxed focus:border-neutral-700 focus:outline-hidden"
                   />
                 ) : (
-                  <div className="w-full h-[320px] p-4 text-xs  border border-neutral-800 rounded-xl bg-[#0a0a0a] overflow-y-auto whitespace-pre-wrap leading-relaxed text-neutral-300 custom-scrollbar shadow-inner">
+                  <div className="w-full h-[320px] p-4 text-xs  border border-neutral-800 rounded-xl bg-black/40 backdrop-blur-md content-card overflow-y-auto whitespace-pre-wrap leading-relaxed text-neutral-300 custom-scrollbar shadow-inner">
                     {currentItem.letterDraft}
                   </div>
                 )
               ) : (
-                <div className="h-[300px] border border-dashed border-neutral-800 rounded-xl bg-[#0a0a0a] flex flex-col items-center justify-center text-center p-6 gap-4">
+                <div className="h-[300px] border border-dashed border-neutral-800 rounded-xl bg-black/40 backdrop-blur-md content-card flex flex-col items-center justify-center text-center p-6 gap-4">
                   <div className="p-3 bg-neutral-900 border border-neutral-800 rounded-xl text-neutral-500">
                     <Terminal className="w-8 h-8 text-neutral-500" />
                   </div>
@@ -259,7 +259,7 @@ export default function DisputeLetterEditor({ flaggedItems, personalInfo, onUpda
               )}
 
               {/* Regulatory warning banner regarding Credit Repair Organizations Act (CROA) */}
-              <div className="bg-[#0a0a0a] p-4 rounded-xl border border-neutral-800 text-neutral-400 text-xs flex flex-col gap-2 leading-relaxed">
+              <div className="bg-black/40 backdrop-blur-md content-card content-card p-4 rounded-xl border border-neutral-800 text-neutral-400 text-xs flex flex-col gap-2 leading-relaxed">
                 <div className="flex items-center gap-1.5 font-bold  text-neutral-400">
                   <AlertTriangle className="w-4 h-4 text-neutral-400 shrink-0" />
                   <span>REGULATORY DISCLOSURE: CROA PARAGRAPH COMPLIANCE</span>

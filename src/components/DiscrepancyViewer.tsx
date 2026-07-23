@@ -78,7 +78,7 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                 {discrepancies.map((disc) => (
-                  <div key={disc.id} className="bg-[#0a0a0a] p-3.5 rounded-xl border border-neutral-500/20 text-xs shadow-inner">
+                  <div key={disc.id} className="bg-black/40 backdrop-blur-md content-card content-card p-3.5 rounded-xl border border-neutral-500/20 text-xs shadow-inner">
                     <div className="flex items-center justify-between text-neutral-400 font-bold  text-[10px] ">
                       <span>{disc.accountName}</span>
                       <span className="px-1.5 py-0.5 bg-neutral-500/10 text-neutral-400 border border-neutral-500/20 rounded-xl  font-bold text-[9px]">{disc.fieldName}</span>
@@ -102,8 +102,8 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
       )}
 
       {/* 2. PERSONAL INFO SIDE-BY-SIDE ALIGNMENT */}
-      <div className="bg-[#050505] rounded-xl border border-neutral-800 overflow-hidden shadow-none ">
-        <div className="bg-[#0a0a0a] border-b border-neutral-800 p-4 flex items-center justify-between">
+      <div className="bg-black/30 backdrop-blur-md content-card rounded-xl border border-neutral-800 overflow-hidden shadow-none ">
+        <div className="bg-black/40 backdrop-blur-md content-card content-card border-b border-neutral-800 p-4 flex items-center justify-between">
           <h3 className="text-sm font-bold text-neutral-200 flex items-center gap-1.5 ">
             <Users className="w-4 h-4 text-white " /> PII IDENTITY CROSS-REFERENCE
           </h3>
@@ -114,7 +114,7 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-neutral-800 bg-[#0a0a0a] text-[10px] font-bold text-neutral-400   ">
+              <tr className="border-b border-neutral-800 bg-black/40 backdrop-blur-md content-card text-[10px] font-bold text-neutral-400   ">
                 <th className="p-4">Identity Attribute</th>
                 <th className="p-4 border-l border-neutral-800/40">Experian File</th>
                 <th className="p-4 border-l border-neutral-800/40">TransUnion File</th>
@@ -124,14 +124,14 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
             </thead>
             <tbody className="text-xs divide-y divide-neutral-900 font-sans">
               <tr className="hover:bg-neutral-900/10">
-                <td className="p-4 font-semibold text-neutral-400 bg-[#0a0a0a] ">Full Name</td>
+                <td className="p-4 font-semibold text-neutral-400 bg-black/40 backdrop-blur-md content-card ">Full Name</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'Experian')?.personalInfo.name || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'TransUnion')?.personalInfo.name || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'Equifax')?.personalInfo.name || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'Innovis')?.personalInfo.name || '—'}</td>
               </tr>
               <tr className="hover:bg-neutral-900/10">
-                <td className="p-4 font-semibold text-neutral-400 bg-[#0a0a0a] ">SSN (Surgical mask)</td>
+                <td className="p-4 font-semibold text-neutral-400 bg-black/40 backdrop-blur-md content-card ">SSN (Surgical mask)</td>
                 {['Experian', 'TransUnion', 'Equifax', 'Innovis'].map(b => (
                   <td key={b} className="p-4 border-l border-neutral-900/40 ">
                     <span className="bg-neutral-900/80 border border-neutral-800/30 text-neutral-400 px-2 py-0.5 font-bold text-[9px] rounded-xl select-none">████-██-████</span>
@@ -139,14 +139,14 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
                 ))}
               </tr>
               <tr className="hover:bg-neutral-900/10">
-                <td className="p-4 font-semibold text-neutral-400 bg-[#0a0a0a] ">Date of Birth</td>
+                <td className="p-4 font-semibold text-neutral-400 bg-black/40 backdrop-blur-md content-card ">Date of Birth</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40 ">{reports.find(r => r.bureauName === 'Experian')?.personalInfo.dob || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40 ">{reports.find(r => r.bureauName === 'TransUnion')?.personalInfo.dob || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40 ">{reports.find(r => r.bureauName === 'Equifax')?.personalInfo.dob || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40 ">{reports.find(r => r.bureauName === 'Innovis')?.personalInfo.dob || '—'}</td>
               </tr>
               <tr className="hover:bg-neutral-900/10">
-                <td className="p-4 font-semibold text-neutral-400 bg-[#0a0a0a] ">Current Address</td>
+                <td className="p-4 font-semibold text-neutral-400 bg-black/40 backdrop-blur-md content-card ">Current Address</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'Experian')?.personalInfo.address || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'TransUnion')?.personalInfo.address || '—'}</td>
                 <td className="p-4 text-neutral-200 border-l border-neutral-900/40">{reports.find(r => r.bureauName === 'Equifax')?.personalInfo.address || '—'}</td>
@@ -158,8 +158,8 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
       </div>
 
       {/* 3. CREDIT ACCOUNTS SIDE-BY-SIDE MATRIX */}
-      <div className="bg-[#050505] rounded-xl border border-neutral-800 overflow-hidden shadow-none ">
-        <div className="bg-[#0a0a0a] border-b border-neutral-800 p-4 flex items-center justify-between">
+      <div className="bg-black/30 backdrop-blur-md content-card rounded-xl border border-neutral-800 overflow-hidden shadow-none ">
+        <div className="bg-black/40 backdrop-blur-md content-card content-card border-b border-neutral-800 p-4 flex items-center justify-between">
           <h3 className="text-sm font-bold text-neutral-200 flex items-center gap-1.5 ">
             <FileSpreadsheet className="w-4 h-4 text-white" /> LEDGER INTEGRITY MATRIX
           </h3>
@@ -170,7 +170,7 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-neutral-800 bg-[#0a0a0a] text-[10px] font-bold text-neutral-400   ">
+              <tr className="border-b border-neutral-800 bg-black/40 backdrop-blur-md content-card text-[10px] font-bold text-neutral-400   ">
                 <th className="p-4 w-[240px]">Account Entity</th>
                 <th className="p-4 border-l border-neutral-800/40">Experian File</th>
                 <th className="p-4 border-l border-neutral-800/40">TransUnion File</th>
@@ -193,7 +193,7 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
                   <tr key={stdName} className={`${rowBgClass} transition-colors group`}>
                     
                     {/* LEFT COLUMN: ACCOUNT NAME */}
-                    <td className="p-4 bg-[#0a0a0a] align-top border-r border-neutral-900 ">
+                    <td className="p-4 bg-black/40 backdrop-blur-md content-card align-top border-r border-neutral-900 ">
                       <div className="flex flex-col gap-1.5">
                         <span className="font-bold text-neutral-100 text-xs">{stdName}</span>
                         {flaggedType === 'fraud' && (
@@ -219,7 +219,7 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
                       const acc = getAccountForBureau(stdName, bureau);
                       if (!acc) {
                         return (
-                          <td key={bureau} className="p-4 align-top text-neutral-600 italic font-medium bg-[#0a0a0a] border-r border-neutral-900/60 ">
+                          <td key={bureau} className="p-4 align-top text-neutral-600 italic font-medium bg-black/40 backdrop-blur-md content-card border-r border-neutral-900/60 ">
                             Not Reported
                           </td>
                         );
@@ -280,8 +280,8 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
       </div>
 
       {/* 4. RECENT INQUIRIES SIDE-BY-SIDE MATRIX */}
-      <div className="bg-[#050505] rounded-xl border border-neutral-800 overflow-hidden shadow-none ">
-        <div className="bg-[#0a0a0a] border-b border-neutral-800 p-4 flex items-center justify-between">
+      <div className="bg-black/30 backdrop-blur-md content-card rounded-xl border border-neutral-800 overflow-hidden shadow-none ">
+        <div className="bg-black/40 backdrop-blur-md content-card content-card border-b border-neutral-800 p-4 flex items-center justify-between">
           <h3 className="text-sm font-bold text-neutral-200 flex items-center gap-1.5 ">
             <AlertCircle className="w-4 h-4 text-white" /> HARD INQUIRIES CHRONOLOGY
           </h3>
@@ -289,19 +289,19 @@ export default function DiscrepancyViewer({ reports, discrepancies, flaggedItems
             Active 24-Month Window
           </span>
         </div>
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-4 gap-4 bg-[#0a0a0a]">
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-4 gap-4 bg-black/40 backdrop-blur-md content-card">
           {['Experian', 'TransUnion', 'Equifax', 'Innovis'].map(bName => {
             const r = reports.find(report => report.bureauName === bName);
             const inqList = r ? r.inquiries : [];
             return (
-              <div key={bName} className="bg-[#0a0a0a] p-4 rounded-xl border border-neutral-800/80 flex flex-col gap-3">
+              <div key={bName} className="bg-black/40 backdrop-blur-md content-card content-card p-4 rounded-xl border border-neutral-800/80 flex flex-col gap-3">
                 <span className="text-xs font-bold text-neutral-300 border-b border-neutral-800/60 pb-1.5  text-white">{bName} Hard List</span>
                 {inqList.length === 0 ? (
                   <p className="text-xs text-neutral-500 italic ">No hard inquiries logged.</p>
                 ) : (
                   <div className="flex flex-col gap-2">
                     {inqList.map(inq => (
-                      <div key={inq.id} className="bg-[#0a0a0a] p-2.5 rounded-xl border border-neutral-900 flex flex-col gap-1 shadow-none ">
+                      <div key={inq.id} className="bg-black/40 backdrop-blur-md content-card content-card p-2.5 rounded-xl border border-neutral-900 flex flex-col gap-1 shadow-none ">
                         <span className={`text-[10px] font-bold ${inq.inquirer.includes('TARGET') || inq.inquirer.includes('COMCAST') ? 'text-neutral-400' : 'text-neutral-200'}`}>
                           {inq.inquirer}
                         </span>

@@ -11,7 +11,8 @@ import RepairWalkthrough from './components/RepairWalkthrough';
 import CopilotChat from './components/CopilotChat';
 import { parseBureauReports, identifyDiscrepancies, identifyFlaggedItems } from './utils/parsers';
 import { CreditReport, Discrepancy, FlaggedItem, PersonalInfo } from './types';
-import { db } from './lib/firebase';
+import { db, auth, googleProvider } from './lib/firebase';
+import { signInWithPopup, signInWithRedirect, signOut, User } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { motion } from 'motion/react';
 import { 
@@ -37,44 +38,131 @@ import {
   LogOut
 } from 'lucide-react';
 
+import WebGLBackground from './components/WebGLBackground';
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export default function App() {
+  // Setup Lenis smooth scrolling
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove((time) => lenis.raf(time * 1000));
+    };
+  }, []);
+
   const [user, setUser] = useState<any | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const authCheckedRef = React.useRef(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   
-  // Auth listener
+  // Mock Auth listener for smooth preview
   useEffect(() => {
-    const savedUser = localStorage.getItem('datacartel_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setAuthLoading(false);
+    // Auto-login to show the animation directly
+    setTimeout(() => {
+      setUser({
+        uid: 'demo-agent-123',
+        email: 'operative@datacartel.com',
+        displayName: 'DataCartel Agent'
+      });
+      setAuthLoading(false);
+      setIsInitializing(true);
+      setTimeout(() => {
+        setIsInitializing(false);
+      }, 3000);
+    }, 500);
   }, []);
 
   const handleLogin = async () => {
-    try {
-      setAuthError(null);
-      setAuthLoading(true);
-      const mockUser = {
-        uid: 'agent-' + Math.random().toString(36).substring(2, 10),
-        displayName: 'Field Agent',
-        email: 'agent@datacartel.local'
-      };
-      localStorage.setItem('datacartel_user', JSON.stringify(mockUser));
-      setUser(mockUser);
+    setAuthError(null);
+    setAuthLoading(true);
+    
+    // Simulate network delay then mock login to show off the GSAP initialization
+    setTimeout(() => {
+      setUser({
+        uid: 'demo-agent-123',
+        email: 'operative@datacartel.com',
+        displayName: 'DataCartel Agent'
+      });
       setAuthLoading(false);
-    } catch (error: any) {
-      console.error("Auth error:", error);
-      setAuthError(error.message || "Failed to authenticate.");
-    }
+      
+      setIsInitializing(true);
+      setTimeout(() => {
+        setIsInitializing(false);
+      }, 3000);
+    }, 800);
   };
+
+  // GSAP Initialization Sequence
+  useEffect(() => {
+    if (isInitializing) {
+      const tl = gsap.timeline();
+      tl.to('.logo-bloom', {
+        boxShadow: '0 0 40px 10px rgba(139, 92, 246, 0.4)', // deep purple bloom
+        duration: 2,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1
+      }, 0);
+      tl.to('.system-text', { opacity: 1, duration: 1, ease: 'power2.out' }, 0.5);
+      tl.to('.tactical-line', { width: '250px', duration: 1, ease: 'power4.inOut' }, 0.5);
+      tl.to('.tactical-text span', { opacity: 1, duration: 0.8, ease: 'power2.out', stagger: 0.3 }, 1.0);
+      tl.to('.init-sequence', { opacity: 0, duration: 0.5, ease: 'power2.inOut' }, 2.5);
+    }
+  }, [isInitializing]);
+
+  // GSAP Entrance Animations for main content
+  useEffect(() => {
+    if (!authLoading && user && !isInitializing) {
+      // Re-trigger scroll triggers for the cards
+      gsap.utils.toArray('.content-card').forEach((card: any) => {
+        gsap.fromTo(card,
+          { y: 60, opacity: 0 },
+          {
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+            y: 0,
+            opacity: 1,
+            duration: 1.2,
+            ease: "expo.out",
+            clearProps: "all"
+          }
+        );
+      });
+      // Refresh ScrollTrigger since DOM changed
+      ScrollTrigger.refresh();
+    }
+  }, [activeStep, isAnalyzed, authLoading, user, isInitializing]);
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem('datacartel_user');
-      setUser(null);
+      await signOut(auth);
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -331,7 +419,8 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
+        <WebGLBackground />
         <div className="w-12 h-12 border-2 border-neutral-700 border-t-white rounded-full animate-spin"></div>
       </div>
     );
@@ -339,12 +428,13 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="min-h-screen bg-transparent text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <WebGLBackground />
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
           <Shield className="w-96 h-96" />
         </div>
         
-        <div className="z-10 max-w-md w-full bg-[#0a0a0a] border border-neutral-800 p-8 flex flex-col items-center text-center">
+        <div className="z-10 max-w-md w-full bg-black/40 backdrop-blur-md border border-neutral-800 p-8 flex flex-col items-center text-center">
           <div className="p-4 bg-neutral-900 border border-neutral-700 mb-6">
             <Cpu className="w-10 h-10 text-white" />
           </div>
@@ -380,11 +470,35 @@ export default function App() {
     );
   }
 
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-transparent text-white flex flex-col items-center justify-center relative overflow-hidden">
+        <WebGLBackground />
+        <div className="init-sequence flex flex-col items-center justify-center z-10 text-center">
+          <div className="logo-bloom p-6 bg-neutral-900 border border-neutral-700 rounded-full mb-6 relative">
+             <div className="absolute inset-0 rounded-full border border-neutral-500 blur-md opacity-50 pulse-glow"></div>
+             <Cpu className="w-12 h-12 text-white relative z-10" />
+          </div>
+          <div className="system-text text-2xl font-display font-black tracking-widest text-neutral-200 uppercase mb-4 opacity-0">
+             Initializing System...
+          </div>
+          <div className="tactical-line w-0 h-[1px] bg-neutral-500 mb-4 mx-auto"></div>
+          <div className="tactical-text text-xs font-mono text-neutral-500 tracking-[0.3em] opacity-0 flex flex-col gap-2">
+             <span>DECRYPTING SANDBOX</span>
+             <span>ESTABLISHING SECURE PROTOCOLS</span>
+             <span>SYNCING TACTICAL COMMS</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-black text-neutral-200 flex flex-col font-sans  relative overflow-x-hidden">
+    <div className="min-h-screen bg-transparent text-neutral-200 flex flex-col font-sans relative overflow-x-hidden">
+      <WebGLBackground />
       
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 border border-neutral-700 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 border border-neutral-700 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in content-card">
           <Shield className="w-5 h-5 text-neutral-400" />
           <span className="text-sm font-medium">{toastMessage}</span>
         </div>
@@ -415,7 +529,7 @@ export default function App() {
       )}
 
       {/* 1. APP BAR / TACTICAL HEADER */}
-      <header className="bg-[#050505]/90 border-b border-neutral-800/80 py-5 px-6 sticky top-0 z-40 ">
+      <header className="bg-black/30 backdrop-blur-md/90 border-b border-neutral-800/80 py-5 px-6 sticky top-0 z-40 ">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
           
           {/* Brand & Subtitle */}
@@ -505,7 +619,7 @@ export default function App() {
             </div>
 
             {/* Step Indicators */}
-            <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-xl border border-neutral-800/80 text-xs  font-medium">
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md p-1 rounded-xl border border-neutral-800/80 text-xs  font-medium">
               {[
                 { step: 1, label: "Sanitize" },
                 { step: 2, label: "Matrix" },
@@ -556,7 +670,7 @@ export default function App() {
 
           {/* Presenter guidance banner if presenter mode active */}
           {isPresenterMode && PRESENTER_GUIDANCE && (
-            <div className="bg-neutral-900/35 border-2 border-dashed border-neutral-700 rounded-xl p-5  relative overflow-hidden animate-fade-in">
+            <div className="bg-neutral-900/35 border-2 border-dashed border-neutral-700 rounded-xl p-5  relative overflow-hidden animate-fade-in content-card">
               <div className="absolute top-0 right-0 p-1 bg-white text-black text-[8px] font-bold   ">
                 CO-PILOT SCREEN-SHARE OVERLAY
               </div>
@@ -604,7 +718,7 @@ export default function App() {
           
           {/* Analysis Status banner if compiled */}
           {isAnalyzed && activeStep !== 1 && (
-            <div className="bg-[#0a0a0a] border border-neutral-800 rounded-xl p-4 shadow-none flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="bg-black/40 backdrop-blur-md border border-neutral-800 rounded-xl p-4 shadow-none flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-neutral-900 text-white rounded-xl border border-neutral-700">
                   <CheckCircle className="w-5 h-5 text-white" />
@@ -627,9 +741,9 @@ export default function App() {
 
           {/* STEP 1: REDACTION VERIFIER */}
           {activeStep === 1 && (
-            <div className="flex flex-col gap-6 animate-fade-in">
+            <div className="flex flex-col gap-6 animate-fade-in content-card">
               {/* Introductory Instruction Card */}
-              <div className="bg-[#0a0a0a] border border-neutral-800 rounded-xl p-6 shadow-none flex items-start gap-4">
+              <div className="bg-black/40 backdrop-blur-md border border-neutral-800 rounded-xl p-6 shadow-none flex items-start gap-4">
                 <div className="p-3 bg-neutral-900/80 border border-neutral-700 text-white rounded-xl shrink-0">
                   <Lock className="w-6 h-6 text-white" />
                 </div>
@@ -650,7 +764,7 @@ export default function App() {
 
           {/* STEP 2: DISCREPANCY MATRIX COMPILER */}
           {activeStep === 2 && isAnalyzed && (
-            <div className="flex flex-col gap-4 animate-fade-in">
+            <div className="flex flex-col gap-4 animate-fade-in content-card">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-neutral-100   flex items-center gap-2 ">
                   <FileSpreadsheet className="w-5 h-5 text-white" /> Normalized 4-Bureau Comparison Matrix
@@ -672,7 +786,7 @@ export default function App() {
 
           {/* STEP 3: DISPUTE LETTER DRAUGHTER */}
           {activeStep === 3 && isAnalyzed && (
-            <div className="flex flex-col gap-4 animate-fade-in">
+            <div className="flex flex-col gap-4 animate-fade-in content-card">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold text-neutral-100   flex items-center gap-2 ">
                   <FileText className="w-5 h-5 text-white" /> Auto-Draft FCRA Dispute Letters
@@ -694,7 +808,7 @@ export default function App() {
 
           {/* STEP 4: GUIDED ACTION REPAIR CHECKLIST */}
           {activeStep === 4 && isAnalyzed && (
-            <div className="flex flex-col gap-4 animate-fade-in">
+            <div className="flex flex-col gap-4 animate-fade-in content-card">
               <h2 className="text-base font-bold text-neutral-100   flex items-center gap-2 ">
                 <ClipboardCheck className="w-5 h-5 text-white" /> Guided Repair Action Plan
               </h2>
@@ -710,7 +824,7 @@ export default function App() {
         {/* RIGHT SIDEBAR */}
         <aside className="lg:col-span-3 flex flex-col gap-6">
           
-          <div className="sticky top-28 bg-[#050505] border border-neutral-800/80 rounded-xl p-5 flex flex-col shadow-sm gap-4">
+          <div className="sticky top-28 bg-black/30 backdrop-blur-md border border-neutral-800/80 rounded-xl p-5 flex flex-col shadow-sm gap-4">
             <h3 className="font-semibold text-neutral-200 flex items-center gap-2">
               <Shield className="w-4 h-4" /> Legal Compliance
             </h3>
@@ -724,7 +838,7 @@ export default function App() {
       </div>
 
       {/* 3. PREMIUM DEEP DARK FOOTER */}
-      <footer className="bg-black text-neutral-500 py-12 px-6 border-t border-neutral-800 mt-16 text-xs">
+      <footer className="bg-transparent text-neutral-500 py-12 px-6 border-t border-neutral-800 mt-16 text-xs">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-white">

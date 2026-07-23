@@ -153,7 +153,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
     // Highlight redacted regions visually to look like physical blackouts
     const parts = text.split(/(\[REDACTED SSN\]|XXXX-XXXX-\d{4})/g);
     return (
-      <div className=" text-[11px] whitespace-pre-wrap leading-relaxed text-neutral-300 h-[320px] overflow-y-auto bg-[#0a0a0a] p-4 rounded-xl border border-neutral-800/80 custom-scrollbar">
+      <div className=" text-[11px] whitespace-pre-wrap leading-relaxed text-neutral-300 h-[320px] overflow-y-auto bg-black/40 backdrop-blur-md content-card p-4 rounded-xl border border-neutral-800/80 custom-scrollbar">
         {parts.map((part, index) => {
           if (part === '[REDACTED SSN]') {
             return (
@@ -175,7 +175,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
   };
 
   return (
-    <div id="redaction-verifier-card" className="bg-[#050505] rounded-xl shadow-none border border-neutral-800 overflow-hidden mb-8 ">
+    <div id="redaction-verifier-card" className="bg-black/30 backdrop-blur-md content-card rounded-xl shadow-none border border-neutral-800 overflow-hidden mb-8 ">
       
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-neutral-950 to-neutral-900 p-6 border-b border-neutral-800 text-white relative">
@@ -201,7 +201,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
         <div className="lg:col-span-7 flex flex-col gap-5">
           
           {/* Tab Selector */}
-          <div className="flex bg-[#0a0a0a] p-1 rounded-xl border border-neutral-800">
+          <div className="flex bg-black/40 backdrop-blur-md content-card p-1 rounded-xl border border-neutral-800">
             <button
               onClick={() => { setActiveTab('demo'); setRawText(''); }}
               className={`flex-1 py-2 text-xs  font-semibold rounded-xl transition-all cursor-pointer ${activeTab === 'demo' ? 'bg-neutral-800 text-white border border-neutral-700/50 shadow-none' : 'text-neutral-400 hover:text-neutral-200'}`}
@@ -224,7 +224,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
 
           {/* DEMO PROFILE CONTROLS */}
           {activeTab === 'demo' && (
-            <div className="bg-[#0a0a0a] p-5 rounded-xl border border-neutral-800 flex flex-col gap-3">
+            <div className="bg-black/40 backdrop-blur-md content-card content-card p-5 rounded-xl border border-neutral-800 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-200   ">SUBJECT FILE: Natasha K.</span>
                 <span className="px-2 py-0.5 bg-neutral-500/10 border border-neutral-500/20 text-neutral-400 text-[10px] font-bold rounded-full   ">
@@ -237,7 +237,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
               
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                 {(['Experian', 'TransUnion', 'Equifax', 'Innovis'] as const).map(bureau => (
-                  <label key={bureau} className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer select-none transition-all ${demoSelectedBureaus[bureau] ? 'bg-neutral-900 border-neutral-700 text-white font-bold' : 'bg-[#0a0a0a] border-neutral-800 text-neutral-500 hover:text-neutral-300'}`}>
+                  <label key={bureau} className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer select-none transition-all ${demoSelectedBureaus[bureau] ? 'bg-neutral-900 border-neutral-700 text-white font-bold' : 'bg-black/40 backdrop-blur-md content-card border-neutral-800 text-neutral-500 hover:text-neutral-300'}`}>
                     <input
                       type="checkbox"
                       checked={demoSelectedBureaus[bureau]}
@@ -256,7 +256,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-200   ">REPOSITORY SELECTOR</span>
-                <div className="flex gap-1 bg-[#0a0a0a] p-0.5 rounded-xl border border-neutral-800">
+                <div className="flex gap-1 bg-black/40 backdrop-blur-md content-card p-0.5 rounded-xl border border-neutral-800">
                   {(['Experian', 'TransUnion', 'Equifax', 'Innovis'] as const).map(b => (
                     <button
                       key={b}
@@ -272,7 +272,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
                 placeholder="Paste the raw credit report plain text here... Make sure to include private markers like (SSN: 321-55-9081) to verify real-time local blackouts."
-                className="w-full h-[220px] p-4 text-xs  border border-neutral-800 rounded-xl focus:ring-1 focus:ring-white focus:border-neutral-700 bg-[#0a0a0a] text-neutral-200 placeholder-neutral-600 leading-relaxed"
+                className="w-full h-[220px] p-4 text-xs  border border-neutral-800 rounded-xl focus:ring-1 focus:ring-white focus:border-neutral-700 bg-black/40 backdrop-blur-md content-card text-neutral-200 placeholder-neutral-600 leading-relaxed"
               />
             </div>
           )}
@@ -285,7 +285,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
                 <select
                   value={selectedBureau}
                   onChange={(e) => setSelectedBureau(e.target.value as any)}
-                  className="bg-[#0a0a0a] border border-neutral-800 text-xs text-neutral-300  rounded-xl px-3 py-1.5 focus:ring-1 focus:ring-white"
+                  className="bg-black/40 backdrop-blur-md content-card content-card border border-neutral-800 text-xs text-neutral-300  rounded-xl px-3 py-1.5 focus:ring-1 focus:ring-white"
                 >
                   <option value="Experian">Experian National File</option>
                   <option value="TransUnion">TransUnion National File</option>
@@ -299,7 +299,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all flex flex-col items-center justify-center cursor-pointer ${dragActive ? 'border-neutral-700 bg-neutral-900/15' : 'border-neutral-800 bg-[#0a0a0a] hover:bg-[#0a0a0a] hover:border-neutral-700'}`}
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all flex flex-col items-center justify-center cursor-pointer ${dragActive ? 'border-neutral-700 bg-neutral-900/15' : 'border-neutral-800 bg-black/40 backdrop-blur-md content-card hover:bg-black/40 backdrop-blur-md content-card hover:border-neutral-700'}`}
                 onClick={() => document.getElementById('file-upload-input')?.click()}
               >
                 <input
@@ -320,7 +320,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
 
           {/* REDACTION STATUS METRICS */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#050505] p-3.5 rounded-xl border border-neutral-800 flex items-center justify-between shadow-none">
+            <div className="bg-black/30 backdrop-blur-md content-card p-3.5 rounded-xl border border-neutral-800 flex items-center justify-between shadow-none">
               <div>
                 <p className="text-[10px] font-bold text-neutral-500   ">SSN Redactions</p>
                 <p className="text-xl  font-bold text-white mt-0.5">
@@ -332,7 +332,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
               <CheckCircle2 className="w-6 h-6 text-white " />
             </div>
             
-            <div className="bg-[#050505] p-3.5 rounded-xl border border-neutral-800 flex items-center justify-between shadow-none">
+            <div className="bg-black/30 backdrop-blur-md content-card p-3.5 rounded-xl border border-neutral-800 flex items-center justify-between shadow-none">
               <div>
                 <p className="text-[10px] font-bold text-neutral-500   ">Account Maskings</p>
                 <p className="text-xl  font-bold text-neutral-400 mt-0.5">
@@ -354,7 +354,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
         </div>
 
         {/* Right column: High Fidelity Visual Redaction Preview */}
-        <div className="lg:col-span-5 flex flex-col gap-4 bg-[#0a0a0a] p-4 rounded-xl border border-neutral-800/80">
+        <div className="lg:col-span-5 flex flex-col gap-4 bg-black/40 backdrop-blur-md content-card p-4 rounded-xl border border-neutral-800/80">
           <span className="text-xs font-bold text-neutral-200   flex items-center gap-2 ">
             <Terminal className="w-4 h-4 text-white" /> Output Preview
           </span>
@@ -367,7 +367,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
               {demoRedactedResults['Experian'] ? (
                 renderHighlightPreview(demoRedactedResults['Experian'].redacted)
               ) : (
-                <div className="h-[300px] flex items-center justify-center bg-[#0a0a0a] rounded-xl border border-dashed border-neutral-800">
+                <div className="h-[300px] flex items-center justify-center bg-black/40 backdrop-blur-md content-card rounded-xl border border-dashed border-neutral-800">
                   <span className="text-neutral-600 text-xs  ">Processing file...</span>
                 </div>
               )}
@@ -390,7 +390,7 @@ export default function RedactionVerifier({ onVerified }: RedactionVerifierProps
       </div>
 
       {/* Network Layer Proof Footer */}
-      <div className="bg-[#0a0a0a] border-t border-neutral-800 p-5 text-xs text-neutral-500 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 ">
+      <div className="bg-black/40 backdrop-blur-md content-card content-card border-t border-neutral-800 p-5 text-xs text-neutral-500 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 ">
         <span className="flex items-center gap-2 font-semibold text-neutral-300">
           <Cpu className="w-4 h-4 text-white " /> NETWORK ENVELOPE AUDIT PROOF
         </span>

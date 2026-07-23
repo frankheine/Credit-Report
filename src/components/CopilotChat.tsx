@@ -78,7 +78,7 @@ export default function CopilotChat({ isOpen, onClose }: CopilotChatProps) {
 
       {/* Copilot Chat Sidebar */}
       <div 
-        className={`fixed top-0 right-0 z-50 w-full sm:w-[450px] h-full bg-[#0a0a0a] border-l border-neutral-800 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 z-50 w-full sm:w-[450px] h-full bg-black/40 backdrop-blur-md content-card border-l border-neutral-800 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

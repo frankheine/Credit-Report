@@ -26,7 +26,7 @@ export default function RepairWalkthrough({ flaggedItems, onToggleStep }: Repair
     <div id="repair-walkthrough-section" className="flex flex-col gap-6">
       
       {/* Informational Intro Header */}
-      <div className="bg-[#050505] rounded-xl border border-neutral-800 p-5 shadow-none ">
+      <div className="bg-black/30 backdrop-blur-md content-card rounded-xl border border-neutral-800 p-5 shadow-none ">
         <h3 className="text-sm font-bold text-neutral-200 flex items-center gap-1.5 ">
           <ClipboardCheck className="w-4 h-4 text-white " /> GUIDED REPAIR ACTION PORTAL
         </h3>
@@ -44,7 +44,7 @@ export default function RepairWalkthrough({ flaggedItems, onToggleStep }: Repair
           return (
             <div 
               key={item.id} 
-              className={`bg-[#050505] rounded-xl border p-5 flex flex-col justify-between shadow-none transition-all  ${
+              className={`bg-black/30 backdrop-blur-md content-card rounded-xl border p-5 flex flex-col justify-between shadow-none transition-all  ${
                 pct === 100 
                   ? 'border-neutral-700  bg-neutral-900/5' 
                   : isFraud 
@@ -68,7 +68,7 @@ export default function RepairWalkthrough({ flaggedItems, onToggleStep }: Repair
                 </div>
 
                 {/* Description Details */}
-                <p className="text-[11px] text-neutral-400 bg-[#0a0a0a] p-3 rounded-xl border border-neutral-900 mb-4 leading-relaxed ">
+                <p className="text-[11px] text-neutral-400 bg-black/40 backdrop-blur-md content-card p-3 rounded-xl border border-neutral-900 mb-4 leading-relaxed ">
                   {item.details}
                 </p>
 
@@ -81,7 +81,7 @@ export default function RepairWalkthrough({ flaggedItems, onToggleStep }: Repair
                 </div>
 
                 {/* Progress Bar Track */}
-                <div className="w-full bg-[#0a0a0a] border border-neutral-900 h-2.5 rounded-full overflow-hidden mb-5">
+                <div className="w-full bg-black/40 backdrop-blur-md content-card border border-neutral-900 h-2.5 rounded-full overflow-hidden mb-5">
                   <div 
                     className={`h-full transition-all duration-500 ${pct === 100 ? 'bg-white shadow-none' : isFraud ? 'bg-neutral-500 shadow-none' : 'bg-neutral-500 shadow-none'}`}
                     style={{ width: `${pct}%` }}
@@ -98,9 +98,9 @@ export default function RepairWalkthrough({ flaggedItems, onToggleStep }: Repair
                       <div 
                         key={step.id} 
                         onClick={() => onToggleStep(item.id, step.id)}
-                        className={`flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-all border select-none bg-[#0a0a0a] ${
+                        className={`flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-all border select-none bg-black/40 backdrop-blur-md content-card ${
                           step.completed 
-                            ? 'opacity-50 border-neutral-900 hover:bg-[#0a0a0a]' 
+                            ? 'opacity-50 border-neutral-900 hover:bg-black/40 backdrop-blur-md content-card' 
                             : 'border-neutral-800/60 hover:bg-neutral-900/40 hover:border-neutral-700'
                         }`}
                       >
